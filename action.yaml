@@ -12,7 +12,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Set Greating
+    - name: Set Greeting
       run: echo "Hello $INPUT_WHO_TO_GREET."
       shell: bash
       env: 
@@ -27,7 +27,7 @@ runs:
       run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
       shell: bash
       env: 
-        GITHIUB_ACTION_PATH: ${{ github.action_path }}
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
 
     - name: Run goodbye.sh
       run: goodbye.sh
