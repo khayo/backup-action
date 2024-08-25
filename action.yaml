@@ -32,3 +32,11 @@ runs:
     - name: Run goodbye.sh
       run: goodbye.sh
       shell: bash
+
+    - name: Configurando ambiente
+      shell: bash
+      run: |
+          apt update
+          apt install -y cifs-utils          
+          echo "Updated"
+
