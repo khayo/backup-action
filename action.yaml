@@ -1,42 +1,54 @@
-name: 'Hello world'
-description: 'Greet someone'
+name: 'Backup sistema'
+description: 'Faz backup do sistema atual'
 inputs:
-  who-to-greet:
-    description: 'who-to-greet'
+  servidor:
+    description: 'Servidor onde será feito o backup'
     required: true
-    default: 'World'
-outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-number }}
+  user:
+    description: 'Usuário com permissão no servidor'
+    required: true
+  pass:
+    description: 'Senha do usuário'
+    required: true
+  projeto:
+    description: 'Nome do projeto'
+    required: true
+  tipo:
+    description: 'Tipo de projeto (ui/api/service/etc)'
+    required: true
 runs:
   using: "composite"
   steps:
-    - name: Set Greeting
-      run: echo "Hello teste $INPUT_WHO_TO_GREET."
-      shell: bash
-      env: 
-        INPUT_WHO_TO_GREET: ${{ inputs.who-to-greet }}
-
-    - name: Random Number Generator
-      id: random-number-generator
-      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Set GitHub Path
-      run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
-      shell: bash
-      env: 
-        GITHUB_ACTION_PATH: ${{ github.action_path }}
-
-    - name: Run goodbye.sh
-      run: goodbye.sh
-      shell: bash
-
     - name: Configurando ambiente
       shell: bash
       run: |
           apt update
           apt install -y cifs-utils          
-          echo "Updated"
 
+    - name: Preparando acesso ao servidor
+      shell: bash
+      run: |
+        mkdir ~/backup
+        mount -t cifs //$SERVER/backup ~/backup -o username=${USER},password=${PASS},uid=$(id -u),gid=$(id -g)
+        mkdir ~/win_share
+        mount -t cifs //$SERVER/sites ~/win_share -o username=${USER},password=${PASS},uid=$(id -u),gid=$(id -g)          
+      env:
+        SERVER: ${{ inputs.server }}
+        USER: ${{ inputs.user }}
+        PASS: ${{ inputs.pass }}
+
+
+    - name: Criando backup
+      shell: bash
+      run: |
+        if [ "$(ls -A ~/win_share/$PROJECT/$TIPO)" ]; then
+          current_date=$(date +"%Y%m%d_%H%M")
+          nomepasta="${current_date}_${PROJECT}_$TIPO"
+
+          mkdir ~/backup/$nomepasta && cp -r ~/win_share/$PROJECT/$TIPO/* "$_"
+        else
+          echo "A pasta está vazia, pulando a etapa de backup."
+        fi          
+      env:
+        PROJECT: ${{ inputs.project }}
+        TIPO: ${{ inputs.tipo }}
