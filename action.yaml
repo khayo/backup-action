@@ -1,7 +1,7 @@
 name: 'Backup sistema'
 description: 'Faz backup do sistema atual'
 inputs:
-  servidor:
+  server:
     description: 'Servidor onde será feito o backup'
     required: true
   user:
@@ -10,10 +10,10 @@ inputs:
   pass:
     description: 'Senha do usuário'
     required: true
-  projeto:
+  project:
     description: 'Nome do projeto'
     required: true
-  tipo:
+  type:
     description: 'Tipo de projeto (ui/api/service/etc)'
     required: true
 runs:
@@ -29,26 +29,26 @@ runs:
       shell: bash
       run: |
         mkdir ~/backup
-        mount -t cifs //$SERVER/backup ~/backup -o username=${USER},password=${PASS},uid=$(id -u),gid=$(id -g)
+        mount -t cifs //$INPUT_SERVER/backup ~/backup -o username=${INPUT_USER},password=${INPUT_PASS},uid=$(id -u),gid=$(id -g)
         mkdir ~/win_share
-        mount -t cifs //$SERVER/sites ~/win_share -o username=${USER},password=${PASS},uid=$(id -u),gid=$(id -g)          
+        mount -t cifs //$INPUT_SERVER/sites ~/win_share -o username=${INPUT_USER},password=${INPUT_PASS},uid=$(id -u),gid=$(id -g)          
       env:
-        SERVER: ${{ inputs.server }}
-        USER: ${{ inputs.user }}
-        PASS: ${{ inputs.pass }}
+        INPUT_SERVER: ${{ inputs.server }}
+        INPUT_USER: ${{ inputs.user }}
+        INPUT_PASS: ${{ inputs.pass }}
 
 
     - name: Criando backup
       shell: bash
       run: |
-        if [ "$(ls -A ~/win_share/$PROJECT/$TIPO)" ]; then
+        if [ "$(ls -A ~/win_share/$INPUT_PROJECT/$INPUT_TYPE)" ]; then
           current_date=$(date +"%Y%m%d_%H%M")
-          nomepasta="${current_date}_${PROJECT}_$TIPO"
+          nomepasta="${current_date}_${INPUT_PROJECT}_$INPUT_TYPE"
 
-          mkdir ~/backup/$nomepasta && cp -r ~/win_share/$PROJECT/$TIPO/* "$_"
+          mkdir ~/backup/$nomepasta && cp -r ~/win_share/$INPUT_PROJECT/$INPUT_TYPE/* "$_"
         else
           echo "A pasta está vazia, pulando a etapa de backup."
         fi          
       env:
-        PROJECT: ${{ inputs.project }}
-        TIPO: ${{ inputs.tipo }}
+        INPUT_PROJECT: ${{ inputs.project }}
+        INPUT_TYPE: ${{ inputs.type }}
