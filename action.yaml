@@ -1,7 +1,7 @@
 name: 'Hello world'
 description: 'Greet someone'
 inputs:
-  who-to-great:
+  who-to-greet:
     description: 'who-to-greet'
     required: true
     default: 'World'
